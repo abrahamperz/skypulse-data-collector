@@ -1,0 +1,8 @@
+# SQLite database files produced at runtime
+*.db
+*.db-wal
+*.db-shm
+
+# Compiled binary
+/collector
+/arch3
