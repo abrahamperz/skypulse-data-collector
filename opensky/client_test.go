@@ -97,3 +97,20 @@ func TestBBoxFromEnv(t *testing.T) {
 		}
 	})
 }
+
+// The embedded sample snapshot used by the hosted demo's fallback must be
+// non-empty and well-formed (every aircraft has an address and a country).
+func TestSampleSnapshot(t *testing.T) {
+	snap := SampleSnapshot()
+	if len(snap.States) == 0 {
+		t.Fatal("sample snapshot is empty")
+	}
+	for i, s := range snap.States {
+		if s.ICAO24 == "" {
+			t.Errorf("state %d has no ICAO24", i)
+		}
+		if s.OriginCountry == "" {
+			t.Errorf("state %d has no origin country", i)
+		}
+	}
+}

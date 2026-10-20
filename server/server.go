@@ -29,8 +29,15 @@ const (
 	cacheTTL     = 30 * time.Second
 )
 
+// fetcher is the slice of the OpenSky client the handler needs. It is a package
+// variable so tests can substitute a fake and exercise the live and fallback
+// paths offline, without reaching the network.
+type fetcher interface {
+	FetchStates(ctx context.Context, bbox opensky.BBox) (*opensky.Snapshot, error)
+}
+
 var (
-	client = opensky.New(fetchTimeout)
+	client fetcher = opensky.New(fetchTimeout)
 
 	mu         sync.Mutex
 	cached     *opensky.Snapshot

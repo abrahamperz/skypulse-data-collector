@@ -180,6 +180,19 @@ The repository includes unit tests covering F2, F3, F6, and F7, which run offlin
 (`go test ./...`). F1 is validated by running the collector against the live
 OpenSky API.
 
+The hosted web tier is tested too, with the OpenSky client replaced by a fake so
+the tests need no network:
+
+- `web.CountByCountry`: aircraft are grouped and ranked by origin country correctly.
+- `server.Handler`, live path: a successful fetch renders the live data and the
+  "live" badge.
+- `server.Handler`, fallback path: when the fetch fails, the page still returns
+  HTTP 200 and renders the embedded sample data, labeled as sample. This is the
+  resilience behavior that keeps the hosted URL working when OpenSky blocks it.
+- `server.Handler`, JSON: `?format=json` returns a valid, decodable snapshot.
+- `server.bboxFromQuery` and `opensky.SampleSnapshot`: parsing and the fallback
+  data are well-formed.
+
 ### 4.3 Non-functional requirements
 
 | # | Requirement | How it is verified |
