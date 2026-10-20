@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"arch3/internal/opensky"
+	"arch3/opensky"
 
 	// Pure-Go SQLite driver (no CGO, no C compiler required).
 	_ "modernc.org/sqlite"

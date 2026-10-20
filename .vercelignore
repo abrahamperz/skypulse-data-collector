@@ -1,0 +1,8 @@
+# The hosted demo is the HTTP server in cmd/server plus the packages it imports
+# (server, web, opensky). Exclude the command-line collector and its SQLite
+# storage so Vercel uses cmd/server/main.go as the Go server entry point
+# instead of the root main.go (the CLI, which would try to open a database).
+/main.go
+/internal/
+/migrations/
+*.db

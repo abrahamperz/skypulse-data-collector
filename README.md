@@ -2,7 +2,11 @@
 
 A small Go program that fetches live aircraft states from the **OpenSky Network** public API and stores them in a **SQLite** database. It is the data collection component (DC) of the SkyPulse project.
 
-The program:
+**Hosted live demo:** https://arch3-gilt.vercel.app
+
+The demo is a small, stateless HTTP view of a snapshot (aircraft count, breakdown by origin country, and a sample of tracked aircraft), with a JSON endpoint at `?format=json`. It runs on Vercel, which cannot keep a SQLite file, so it does not persist data: persistence is the job of the command-line collector described below. OpenSky rate-limits and sometimes blocks datacenter IP ranges (such as Vercel's); when the live API cannot be reached, the page falls back to embedded sample data and says so.
+
+The command-line collector:
 
 1. opens a SQLite database (creating the file if it does not exist),
 2. applies the schema migrations in `migrations/`,
@@ -67,13 +71,19 @@ sqlite3 skypulse.db "SELECT origin_country, COUNT(*) AS flights
 
 ```
 .
-├── main.go                     entry point: open DB, migrate, fetch, store
+├── main.go                     CLI collector: open DB, migrate, fetch, store
 ├── go.mod
 ├── migrations/
 │   └── 0001_init.sql           database schema (snapshots + flight_states)
+├── cmd/
+│   └── server/main.go          HTTP server entry point for the hosted demo
+├── opensky/                    OpenSky API client, decoding, and sample data
+│   ├── client.go
+│   └── sample.go               embedded fallback snapshot for the demo
+├── web/web.go                  renders a snapshot as HTML or JSON
+├── server/server.go            HTTP handler: fetch + cache + sample fallback
 └── internal/
-    ├── opensky/client.go       OpenSky API client and JSON decoding
-    └── storage/storage.go      SQLite access: Open, Migrate, SaveSnapshot
+    └── storage/storage.go      SQLite access (used by the CLI collector)
 ```
 
 ## Schema

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"arch3/internal/opensky"
+	"arch3/opensky"
 )
 
 // testMigrations is a self-contained migration set so the tests run offline

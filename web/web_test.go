@@ -3,7 +3,7 @@ package web
 import (
 	"testing"
 
-	"arch3/internal/opensky"
+	"arch3/opensky"
 )
 
 func TestCountByCountry(t *testing.T) {

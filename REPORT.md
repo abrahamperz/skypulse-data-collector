@@ -26,6 +26,11 @@ snapshot", using plain SQL.
 The program is intentionally small and operational: no server to run, no external
 database to install, and a single dependency (a pure-Go SQLite driver).
 
+A small, stateless web tier (deployed at https://arch3-gilt.vercel.app) renders a
+snapshot as an HTML dashboard and a JSON endpoint. It reuses the same OpenSky
+client and is read-only; it does not persist anything. See Section 6 for why the
+hosted tier is stateless.
+
 ## 2. Architecture
 
 ### 2.1 Diagram
@@ -194,13 +199,27 @@ go test ./...  # runs the offline unit tests
 
 Options and example queries are documented in `README.md`.
 
-## 6. Source code
+## 6. Source code and hosting
 
-All source code is in this repository:
+**Repository:** https://github.com/abrahamperz/skypulse-data-collector
+**Hosted live demo:** https://arch3-gilt.vercel.app
 
-- `main.go` : entry point and orchestration
-- `internal/opensky/` : OpenSky API client and decoding
+Source layout:
+
+- `main.go` : the command-line collector (open DB, migrate, fetch, store)
+- `opensky/` : OpenSky API client, decoding, and an embedded sample snapshot
 - `internal/storage/` : SQLite access, migrations, snapshot writes
+- `web/` : renders a snapshot as HTML or JSON
+- `server/` + `cmd/server/` : the HTTP server behind the hosted demo
 - `migrations/` : SQL schema
 
-The application is a local command-line collector, so it is not hosted at a URL.
+A note on the hosted demo: the core application is the command-line collector,
+which persists snapshots to SQLite. The hosted demo is a **stateless** HTTP view
+of a snapshot, because the host (Vercel) runs ephemeral serverless instances with
+a read-only filesystem and cannot keep a SQLite file. This is exactly the
+SQL-vs-serverless trade-off discussed in Section 3: durable, query-friendly
+storage belongs in the collector, while the web tier only reads and renders.
+OpenSky rate-limits and sometimes blocks datacenter IP ranges (such as Vercel's);
+when the live API cannot be reached from the host, the demo falls back to an
+embedded sample snapshot and labels the page accordingly, so the URL always shows
+the application working end to end.

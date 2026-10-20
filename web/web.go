@@ -12,7 +12,7 @@ import (
 	"sort"
 	"time"
 
-	"arch3/internal/opensky"
+	"arch3/opensky"
 )
 
 // CountryCount is the number of aircraft from one origin country in a snapshot.
@@ -61,6 +61,7 @@ type pageData struct {
 	Generated    string
 	Total        int
 	Scope        string
+	Live         bool
 	TopCountries []CountryCount
 	Sample       []aircraftRow
 }
@@ -68,12 +69,14 @@ type pageData struct {
 const sampleSize = 25
 const topCountries = 15
 
-// RenderHTML writes the snapshot as a small HTML dashboard.
-func RenderHTML(w http.ResponseWriter, snap *opensky.Snapshot, scope string) {
+// RenderHTML writes the snapshot as a small HTML dashboard. When live is false
+// the data is the embedded sample (OpenSky was unreachable) and the page says so.
+func RenderHTML(w http.ResponseWriter, snap *opensky.Snapshot, scope string, live bool) {
 	data := pageData{
 		Generated: time.Unix(snap.Time, 0).UTC().Format("2006-01-02 15:04:05 UTC"),
 		Total:     len(snap.States),
 		Scope:     scope,
+		Live:      live,
 	}
 
 	all := CountByCountry(snap.States)
@@ -151,13 +154,16 @@ var pageTemplate = template.Must(template.New("page").Parse(`<!doctype html>
   th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid #8883; }
   th { color: #888; font-weight: 600; }
   td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .banner { background: #fbe8a6; color: #5c4400; border-radius: 8px;
+            padding: .7rem 1rem; font-size: .88rem; }
   footer { margin-top: 2.5rem; color: #888; font-size: .85rem; }
   a { color: inherit; }
 </style>
 </head>
 <body>
   <h1>SkyPulse</h1>
-  <p class="meta">Live aircraft states from the OpenSky Network · snapshot time {{.Generated}} · scope: {{.Scope}}</p>
+  <p class="meta">Aircraft states from the OpenSky Network · snapshot time {{.Generated}} · scope: {{.Scope}}</p>
+  {{if not .Live}}<p class="banner">⚠ Showing embedded sample data: the live OpenSky API could not be reached from this server right now (it rate-limits and sometimes blocks datacenter IPs). The data pipeline and rendering are the same; only the source differs. Reload to retry the live feed.</p>{{end}}
 
   <div class="cards">
     <div class="card"><div class="n">{{.Total}}</div><div class="l">aircraft tracked</div></div>

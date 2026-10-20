@@ -13,8 +13,8 @@ import (
 	"log"
 	"time"
 
-	"arch3/internal/opensky"
 	"arch3/internal/storage"
+	"arch3/opensky"
 )
 
 // migrationsFS embeds the SQL migration files so the program applies the
